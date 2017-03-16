@@ -26,7 +26,7 @@ public class PathManager
 
     public bool ReachedWaypoint()
     {
-        return Local.IsCtmIdle/* && (CurrentDest == null || CurrentDest.GetDistanceTo(Local.Position) < ???)*/;
+        return Local.IsCtmIdle || (CurrentDest == null || CurrentDest.GetDistanceTo(Local.Position) < 5.0f);
     }
 
     public bool HasNext()
@@ -46,6 +46,8 @@ public class PathManager
         {
             if(!HotspotPath.HasNext())
             {
+                // NOTE: We have already reached our final destination.
+                // HasNext should have returned false.
                 return (CurrentDest = null);
             }
             else

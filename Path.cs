@@ -47,6 +47,7 @@ public class Path
         if(NearestWaypoint)
         {
             CurrentWaypointIndex = GetNearestWaypointIndex();
+            Util.DebugMsg("CurrentWaypointIndex=" + CurrentWaypointIndex);
         }
         else
         {

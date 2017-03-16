@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Xml;
 using ZzukBot.Objects;
 
@@ -27,7 +28,7 @@ public class Profile
 
         return Result;
     }
-
+    
     public static Location[] ParseHotspots(XmlNodeList Parent)
     {
         Location[] Hotspots = new Location[Parent.Count];
@@ -46,7 +47,7 @@ public class Profile
         return Hotspots;
     }
 
-    public static Profile ParseProfile(string Path)
+    public static Profile ParseV1Profile(string Path)
     {
         try
         {
@@ -70,7 +71,7 @@ public class Profile
             {
                 XmlNode Node = Factions[FactionIndex];
                 Profile.Factions[FactionIndex] = int.Parse(Node.InnerText);
-                SimpleGrinder.DebugMsg("Faction[" + FactionIndex + "] = " + Profile.Factions[FactionIndex]);
+                Util.DebugMsg("Faction[" + FactionIndex + "] = " + Profile.Factions[FactionIndex]);
             }
             
             if(Repair.Count > 0)
@@ -83,23 +84,18 @@ public class Profile
                 XmlNode NameNode = RepairNode.SelectSingleNode("Name");
 
                 Profile.RepairNpcPosition = new Location(float.Parse(X.InnerText), float.Parse(Y.InnerText), float.Parse(Z.InnerText));
-                SimpleGrinder.DebugMsg("X="+Profile.RepairNpcPosition.X);
-                SimpleGrinder.DebugMsg("Y="+Profile.RepairNpcPosition.Y);
-                SimpleGrinder.DebugMsg("Z="+Profile.RepairNpcPosition.Z);
-
                 Profile.RepairNpcName = NameNode.InnerText;
-                SimpleGrinder.DebugMsg("RepairNpcName="+Profile.RepairNpcName);
             }
             else
             {
-                SimpleGrinder.DebugMsg("Not using repair");
+                Util.DebugMsg("Not using repair");
             }
             
             return Profile;
         }
         catch(Exception e)
         {
-            SimpleGrinder.DebugMsg("Error while parsing profile. " + e.ToString());
+            Util.DebugMsg("Error while parsing profile. " + e.ToString());
             return null;
         }
     }
