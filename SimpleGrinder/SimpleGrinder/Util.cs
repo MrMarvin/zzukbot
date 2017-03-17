@@ -20,8 +20,8 @@ public static class Util
     
     public static void DebugMsg(string String)
     {
-        ZzukBot.ExtensionMethods.StringExtensions.Log(String, "SimpleGrinder.txt", true);
-        Lua.Instance.Execute("DEFAULT_CHAT_FRAME:AddMessage(\"" + String + "\");");
+        ZzukBot.ExtensionMethods.StringExtensions.Log("Debug: "+String, "SimpleGrinder.txt", true);
+        Lua.Instance.Execute("DEFAULT_CHAT_FRAME:AddMessage(\"DEBUG: " + String + "\");");
     }
     
     public static bool IsManaClass(ClassId Class)

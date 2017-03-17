@@ -70,7 +70,7 @@ public class Profile
             {
                 XmlNode Node = Factions[FactionIndex];
                 Profile.Factions[FactionIndex] = int.Parse(Node.InnerText);
-                //Util.DebugMsg("Faction[" + FactionIndex + "] = " + Profile.Factions[FactionIndex]);
+                Util.DebugMsg("Faction[" + FactionIndex + "] = " + Profile.Factions[FactionIndex]);
             }
             
             if(Repair.Count > 0)
