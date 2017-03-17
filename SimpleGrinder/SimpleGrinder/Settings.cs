@@ -1,5 +1,7 @@
 ﻿public class Settings
 {
+    public static string ProfileFilePath;
+
     public static float SearchMobRange = 50;
 
     public static bool AlwaysDrinkWhenEating = false; // useful for mages

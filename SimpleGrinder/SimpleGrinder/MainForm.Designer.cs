@@ -46,6 +46,8 @@
             this.label5 = new System.Windows.Forms.Label();
             this.TextBoxMobSearchRadius = new System.Windows.Forms.TextBox();
             this.label6 = new System.Windows.Forms.Label();
+            this.ProfileNameLabel = new System.Windows.Forms.Label();
+            this.ButtonLoadProfile = new System.Windows.Forms.Button();
             this.groupBox1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -200,7 +202,7 @@
             // 
             // TextBoxMobSearchRadius
             // 
-            this.TextBoxMobSearchRadius.Location = new System.Drawing.Point(342, 196);
+            this.TextBoxMobSearchRadius.Location = new System.Drawing.Point(344, 157);
             this.TextBoxMobSearchRadius.Name = "TextBoxMobSearchRadius";
             this.TextBoxMobSearchRadius.Size = new System.Drawing.Size(33, 20);
             this.TextBoxMobSearchRadius.TabIndex = 16;
@@ -209,17 +211,38 @@
             // label6
             // 
             this.label6.AutoSize = true;
-            this.label6.Location = new System.Drawing.Point(235, 199);
+            this.label6.Location = new System.Drawing.Point(237, 160);
             this.label6.Name = "label6";
             this.label6.Size = new System.Drawing.Size(101, 13);
             this.label6.TabIndex = 17;
             this.label6.Text = "Mob Search Radius";
+            // 
+            // ProfileNameLabel
+            // 
+            this.ProfileNameLabel.AutoSize = true;
+            this.ProfileNameLabel.Location = new System.Drawing.Point(88, 235);
+            this.ProfileNameLabel.Name = "ProfileNameLabel";
+            this.ProfileNameLabel.Size = new System.Drawing.Size(260, 13);
+            this.ProfileNameLabel.TabIndex = 18;
+            this.ProfileNameLabel.Text = "No profile loaded!";
+            // 
+            // ButtonLoadProfile
+            // 
+            this.ButtonLoadProfile.Location = new System.Drawing.Point(11, 230);
+            this.ButtonLoadProfile.Name = "ButtonLoadProfile";
+            this.ButtonLoadProfile.Size = new System.Drawing.Size(71, 23);
+            this.ButtonLoadProfile.TabIndex = 19;
+            this.ButtonLoadProfile.Text = "Load Profile";
+            this.ButtonLoadProfile.UseVisualStyleBackColor = true;
+            this.ButtonLoadProfile.Click += new System.EventHandler(this.Event_GUIHandler);
             // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(558, 261);
+            this.Controls.Add(this.ButtonLoadProfile);
+            this.Controls.Add(this.ProfileNameLabel);
             this.Controls.Add(this.label6);
             this.Controls.Add(this.TextBoxMobSearchRadius);
             this.Controls.Add(this.label5);
@@ -263,6 +286,8 @@
         public System.Windows.Forms.ComboBox ComboBoxDrink;
         public System.Windows.Forms.ComboBox ComboBoxPetFood;
         public System.Windows.Forms.TextBox TextBoxMobSearchRadius;
+        public System.Windows.Forms.Button ButtonLoadProfile;
+        public System.Windows.Forms.Label ProfileNameLabel;
     }
 }
 

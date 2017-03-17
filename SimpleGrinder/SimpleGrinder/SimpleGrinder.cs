@@ -8,13 +8,14 @@ using ZzukBot.ExtensionFramework.Classes;
 using static ZzukBot.Constants.Enums;
 using System.Collections.Generic;
 using GUI;
+using System.Runtime.InteropServices;
+using System.Windows.Forms;
 
 [Export(typeof(IBotBase))]
 public class SimpleGrinder : IBotBase
 {
     public Profile CurrentProfile;
     public MainForm GUI;
-    public ClassId LoadedClass;
     public bool UserSetGhostPath;
     public bool UserSetVendorPath;
         
@@ -114,20 +115,8 @@ public class SimpleGrinder : IBotBase
     
     public int Tick()
     {
-        if(LoadedClass != Local.Class)
-        {
-            if(LoadCustomClass(Local.Class))
-            {
-                LoadedClass = Local.Class;
-                Util.DebugMsg("Using CustomClass: [" + CurrentCC.Author + " " + CurrentCC.Name + " " + CurrentCC.Class.ToString() + "]");
-            }
-            else
-            {
-                Util.DebugMsg("Failed to find a CustomClass that matched requirements.");
-                return 100;
-            }
-        }
-        
+        int DelayTime = 0;
+
         bool IsDead = Local.IsDead || Local.InGhostForm;
 
         if(!IsDead)
@@ -157,6 +146,7 @@ public class SimpleGrinder : IBotBase
                     {
                         Local.CtmStopMovement();
                         CurrentCC.OnFight();
+                        DelayTime = 100;
                     }
                     else
                     {
@@ -225,6 +215,7 @@ public class SimpleGrinder : IBotBase
                         {
                             Local.CtmStopMovement();
                             LootUnit.Interact(true);
+                            DelayTime = 100;
                         }
                         else if(Local.IsCtmIdle)
                         {
@@ -239,6 +230,7 @@ public class SimpleGrinder : IBotBase
                             if(!Local.IsEating || !Local.IsDrinking)
                             {
                                 CurrentCC.OnRest();
+                                DelayTime = 100;
                                                 
                                 bool ForceDrink = false;
                                 if(Settings.Food != null && 
@@ -262,6 +254,7 @@ public class SimpleGrinder : IBotBase
                         {
                             Util.DebugMsg("OnBuff success");
                             ReadyToPull = true;
+                            DelayTime = 100;
                         }
                     }
                 }
@@ -269,8 +262,7 @@ public class SimpleGrinder : IBotBase
         }
         else if(Local.IsDead)
         {
-            Lua.Instance.Execute("RepopMe();");
-            Util.DebugMsg("RepopMe();");
+            Local.RepopMe();
         }
         else if(Local.InGhostForm)
         {
@@ -306,8 +298,7 @@ public class SimpleGrinder : IBotBase
                     // TODO: Reached destination!
                     if(Local.TimeUntilResurrect == 0)
                     {
-                        Lua.Instance.Execute("RetrieveCorpse();");
-                        Util.DebugMsg("RetrieveCorpse();");
+                        Local.RetrieveCorpse();
                     }
                 }
             }
@@ -318,7 +309,7 @@ public class SimpleGrinder : IBotBase
             }
         }
         
-        return 100;
+        return DelayTime;
     }
     
     public void PauseBotbase(Action onPauseCallback)
@@ -338,7 +329,7 @@ public class SimpleGrinder : IBotBase
 
         GUI.Visible = !GUI.Visible;
     }
-
+    
     public void Hook_EndScene(IntPtr Device)
     {
         if(ObjectManager.Instance.IsIngame)
@@ -349,7 +340,7 @@ public class SimpleGrinder : IBotBase
                 {
                     int Time = Tick();
 
-                    if(Time > 0)
+                    if(Time != -1)
                     {
                         NextTickTime = Environment.TickCount + Time;
                     }
@@ -363,7 +354,7 @@ public class SimpleGrinder : IBotBase
                     //Thread.Sleep(Environment.TickCount - NextTickTime);
                 }
             }
-            catch (Exception Ex)
+            catch(Exception Ex)
             {
                 Util.DebugMsg(Ex.ToString());
             }
@@ -372,39 +363,63 @@ public class SimpleGrinder : IBotBase
 
     public bool Start(Action StopCallback)
     {
+        if(!ObjectManager.Instance.IsIngame)
+        {
+            MessageBox.Show("Must be in game to start SimpleGrinder.");
+            return false;
+        }
+
         if(this.StopCallback != null)
         {
             Util.DebugMsg("StopCallback was not null.");
             return false;
         }
 
-        Util.DebugMsg("Start!");
+        if(Settings.ProfileFilePath == null)
+        {
+            MessageBox.Show("Must load a profile to start SimpleGrinder.");
+            return false;
+        }
+        
+        CurrentProfile = Profile.ParseV1Profile(Settings.ProfileFilePath);
+
+        if(CurrentProfile == null)
+        {
+            MessageBox.Show("Unable to load selected profile.");
+            return false;
+        }
+        
+        Util.DebugMsg("Parsed " + CurrentProfile.Hotspots.Length + " hotspot(s).");
+        Util.DebugMsg("Parsed " + CurrentProfile.VendorHotspots.Length + " vendor hotspot(s).");
+        Util.DebugMsg("Parsed " + CurrentProfile.GhostHotspots.Length + " ghost hotspot(s).");
+        
+        if(LoadCustomClass(Local.Class))
+        {
+            Util.DebugMsg("Using CustomClass: [" + CurrentCC.Author + " " + CurrentCC.Name + " " + CurrentCC.Class.ToString() + "]");
+        }
+        else
+        {
+            MessageBox.Show("Failed to load CustomClass (missing or multiple of same class)");
+            return false;
+        }
+        
         this.StopCallback = StopCallback;
 
         NextTickTime = Environment.TickCount;
         WasAlive = true;  // NOTE: Important that this be true, even if the bot was started when dead.
         RecalculatePath = true;
         ReadyToPull = false;
+        
+        ProfileGrindPath = new PathManager(CurrentProfile.Hotspots, true);
+        ProfileGrindPath.Reset(true); // TODO: Add into constructor
 
-        CurrentProfile = Profile.ParseV1Profile("D:\\hx\\wow1_v3\\Botbases\\[GRINDING] 8-10 Human (Near Goldshire).xml");
-
-        if(CurrentProfile != null)
-        {
-            Util.DebugMsg("Parsed " + CurrentProfile.Hotspots.Length + " hotspot(s).");
-            Util.DebugMsg("Parsed " + CurrentProfile.VendorHotspots.Length + " vendor hotspot(s).");
-            Util.DebugMsg("Parsed " + CurrentProfile.GhostHotspots.Length + " ghost hotspot(s).");
-                
-            ProfileGrindPath = new PathManager(CurrentProfile.Hotspots, true);
-            ProfileGrindPath.Reset(true);
-
-            ProfileGhostPath = UserSetGhostPath ? new PathManager(CurrentProfile.GhostHotspots) : null;
-            ProfileVendorPath = UserSetVendorPath ? new PathManager(CurrentProfile.VendorHotspots) : null;
+        ProfileGhostPath = UserSetGhostPath ? new PathManager(CurrentProfile.GhostHotspots) : null;
+        ProfileVendorPath = UserSetVendorPath ? new PathManager(CurrentProfile.VendorHotspots) : null;
             
-            // UserSetGhostPath = CurrentProfile.GhostHotspots.Length > 0; // TODO: Implement, not really sure how to handle.
-            UserSetVendorPath = CurrentProfile.VendorHotspots.Length > 0;
+        // UserSetGhostPath = CurrentProfile.GhostHotspots.Length > 0; // TODO: Implement, not really sure how to handle.
+        UserSetVendorPath = CurrentProfile.VendorHotspots.Length > 0;
 
-            DirectX.Instance.OnEndSceneExecution += Hook_EndScene;
-        }
+        DirectX.Instance.OnEndSceneExecution += Hook_EndScene;
 
         Local.EnableCtm();
         return true;

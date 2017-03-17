@@ -1,11 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace GUI
@@ -63,6 +56,18 @@ namespace GUI
             else if(Sender == ButtonAddProtectedItem)
             {
                 ComboBoxProtectedItem.Text = "";
+            }
+            else if(Sender == ButtonLoadProfile)
+            {
+                OpenFileDialog Dialog = new OpenFileDialog();
+                Dialog.Filter = "V1 profile (*.xml)|*.xml";
+                Dialog.Title = "Select a profile";
+
+                if(Dialog.ShowDialog(this) == DialogResult.OK)
+                {
+                    Settings.ProfileFilePath = Dialog.FileName;
+                    ProfileNameLabel.Text = System.IO.Path.GetFileName(Dialog.FileName);;
+                }
             }
         }
 
