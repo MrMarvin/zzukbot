@@ -19,6 +19,11 @@ public class Path
         this.RepeatCircleAround = RepeatCircleAround;
     }
 
+    public Location GetFinalDestination()
+    {
+        return Waypoints[Waypoints.Length - 1];
+    }
+
     int GetNearestWaypointIndex()
     {
         int BestIndex = -1;
