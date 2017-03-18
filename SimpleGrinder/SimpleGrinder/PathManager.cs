@@ -12,7 +12,7 @@ public class PathManager
         HotspotPath = new Path(Hotspots, Repeat, RepeatCircleAround);
     }
 
-    public float DistanceToDestination {get{return CurrentPath.GetFinalDestination().GetDistanceTo(Local.Position);}}
+    public float DistanceToDestination {get{return HotspotPath.GetFinalDestination().GetDistanceTo(Local.Position);}}
 
     public void Reset(bool NearestWaypoint=false)
     {
