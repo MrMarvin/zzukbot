@@ -1,0 +1,7 @@
+D:\ZzukBot3\external_bot_bases_souce\zzukbot\SimpleGrinder\SimpleGrinder\obj\Debug\SimpleGrinder.csprojResolveAssemblyReference.cache
+D:\ZzukBot3\external_bot_bases_souce\zzukbot\SimpleGrinder\SimpleGrinder\obj\Debug\GUI.MainForm.resources
+D:\ZzukBot3\external_bot_bases_souce\zzukbot\SimpleGrinder\SimpleGrinder\obj\Debug\SimpleGrinder.csproj.GenerateResource.Cache
+D:\ZzukBot3\Botbases\open_grindr.dll
+D:\ZzukBot3\Botbases\open_grindr.pdb
+D:\ZzukBot3\external_bot_bases_souce\zzukbot\SimpleGrinder\SimpleGrinder\obj\Debug\open_grindr.dll
+D:\ZzukBot3\external_bot_bases_souce\zzukbot\SimpleGrinder\SimpleGrinder\obj\Debug\open_grindr.pdb

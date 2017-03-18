@@ -22,11 +22,10 @@ public class SimpleWarrior : CustomClass
         {
             Spell.Instance.Cast("Rend");
         }
-        // BUG: Awaiting fix on LocalPlayer#GotAura.
-        /*else if(Local.Rage >= 10 && !Local.GotAura("Battle Shout") && Spell.Instance.IsSpellReady("Battle Shout"))
+        else if(Local.Rage >= 10 && !Local.GotAura("Battle Shout") && Spell.Instance.IsSpellReady("Battle Shout"))
         {
             Spell.Instance.Cast("Battle Shout");
-        }*/
+        }
         // TODO: Range?
         else if(Local.Rage >= 15 && Target.DistanceToPlayer <= 5 && Spell.Instance.IsSpellReady("Heroic Strike"))
         {

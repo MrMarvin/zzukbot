@@ -1,0 +1,7 @@
+D:\ZzukBot3\external_bot_bases_souce\grindr\open_grindr\open_grindr\obj\Debug\open_grindr.csproj.GenerateResource.Cache
+D:\ZzukBot3\Botbases\open_grindr.dll
+D:\ZzukBot3\Botbases\open_grindr.pdb
+D:\ZzukBot3\external_bot_bases_souce\grindr\open_grindr\open_grindr\obj\Debug\open_grindr.dll
+D:\ZzukBot3\external_bot_bases_souce\grindr\open_grindr\open_grindr\obj\Debug\open_grindr.pdb
+D:\ZzukBot3\external_bot_bases_souce\grindr\open_grindr\open_grindr\obj\Debug\open_grindr.csprojResolveAssemblyReference.cache
+D:\ZzukBot3\external_bot_bases_souce\grindr\open_grindr\open_grindr\obj\Debug\GUI.MainForm.resources
