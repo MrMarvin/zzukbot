@@ -326,7 +326,8 @@ public class SimpleGrinder : IBotBase
 
     private void TickLivingTarget()
     {
-        if (Target.DistanceToPlayer <= CurrentCC.CombatDistance)
+       
+        if (IsTargetReachable())
         {
             Util.DebugMsg("In range for Combat, cancelling movement for now");
             CurrentTargetPath = null;
@@ -353,10 +354,18 @@ public class SimpleGrinder : IBotBase
                     Local.CtmTo(Next);
                 } else
                 {
-                    Local.CtmTo(Target.Position);
+                    Util.DebugMsg("reached end of CTM path to target but not quite there yet... recalculating new path on next tick.");
+                    CurrentTargetPath = null;
                 }
             }
         }
+    }
+
+    private bool IsTargetReachable()
+    {
+        // Applying a z-axis bias here to level out mobs above/below the Player that cant really be targetted
+        return (Target.DistanceToPlayer + Math.Abs(Local.Position.Z - Target.Position.Z)) <= CurrentCC.CombatDistance
+            && Local.InLosWith(Target.Position);
     }
 
     private bool HasNoTarget()
