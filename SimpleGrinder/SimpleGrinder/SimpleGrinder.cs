@@ -203,7 +203,7 @@ public class SimpleGrinder : IBotBase
             if (HasNoTarget())
             {
                 Util.DebugMsg("No current Target, aquiring one...");
-                WoWUnit BestUnit = GetClosestMob(Settings.SearchMobRange);
+                WoWUnit BestUnit = GetClosestMob(Settings.Instance.SearchMobRange);
 
                 if (BestUnit != null)
                 {
@@ -226,7 +226,7 @@ public class SimpleGrinder : IBotBase
 
         else
         {
-            WoWUnit LootUnit = GetClosestLootable(Settings.SearchMobRange);
+            WoWUnit LootUnit = GetClosestLootable(Settings.Instance.SearchMobRange);
             if (LootUnit != null)
             {
                 TickLivingLoot();      
@@ -240,28 +240,28 @@ public class SimpleGrinder : IBotBase
 
     private void TickLivingRest()
     {
-        if (Local.HealthPercent < Settings.EatAt ||
-                   (Util.IsManaClass(Local.Class) && Local.ManaPercent < Settings.DrinkAt))
+        if (Local.HealthPercent < Settings.Instance.EatAt ||
+                   (Util.IsManaClass(Local.Class) && Local.ManaPercent < Settings.Instance.DrinkAt))
         {
             if (!Local.IsEating || !Local.IsDrinking)
             {
                 CurrentCC.OnRest();
 
                 bool ForceDrink = false;
-                if (Settings.Food != null &&
+                if (Settings.Instance.Food != null &&
                     !Local.IsEating &&
-                    Local.HealthPercent < Settings.EatAt)
+                    Local.HealthPercent < Settings.Instance.EatAt)
                 {
-                    Local.Eat(Settings.Food);
-                    ForceDrink = Settings.AlwaysDrinkWhenEating;
+                    Local.Eat(Settings.Instance.Food);
+                    ForceDrink = Settings.Instance.AlwaysDrinkWhenEating;
                 }
 
-                if (Settings.Drink != null &&
+                if (Settings.Instance.Drink != null &&
                     !Local.IsDrinking &&
-                    (ForceDrink || Local.ManaPercent < Settings.DrinkAt) &&
+                    (ForceDrink || Local.ManaPercent < Settings.Instance.DrinkAt) &&
                     Util.IsManaClass(Local.Class))
                 {
-                    Local.Drink(Settings.Drink);
+                    Local.Drink(Settings.Instance.Drink);
                 }
             }
         }
@@ -274,7 +274,7 @@ public class SimpleGrinder : IBotBase
     private void TickLivingLoot()
     {
         Util.DebugMsg("TickLivingLoot");
-        WoWUnit LootUnit = GetClosestLootable(Settings.SearchMobRange);
+        WoWUnit LootUnit = GetClosestLootable(Settings.Instance.SearchMobRange);
         if (LootUnit.DistanceToPlayer <= 3)
         {
             CurrentTargetPath = null;
