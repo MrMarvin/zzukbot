@@ -19,7 +19,7 @@ public class Path
         this.RepeatCircleAround = RepeatCircleAround;
     }
 
-    public Location GetFinalLocation()
+    public Location GetFinalDestination()
     {
         return Waypoints[Waypoints.Length - 1];
     }
@@ -29,13 +29,13 @@ public class Path
         int BestIndex = -1;
         float BestDistance = float.MaxValue;
 
-        for(int WaypointIndex = 0; WaypointIndex < Waypoints.Length; ++WaypointIndex)
+        for (int WaypointIndex = 0; WaypointIndex < Waypoints.Length; ++WaypointIndex)
         {
             Location Waypoint = Waypoints[WaypointIndex];
 
             float Distance = Local.Position.GetDistanceTo(Waypoint);
 
-            if(Distance < BestDistance)
+            if (Distance < BestDistance)
             {
                 BestIndex = WaypointIndex;
                 BestDistance = Distance;
@@ -45,11 +45,11 @@ public class Path
         return BestIndex;
     }
 
-    public void Reset(bool NearestWaypoint=false)
+    public void Reset(bool NearestWaypoint = false)
     {
         ReverseTravesale = false;
 
-        if(NearestWaypoint)
+        if (NearestWaypoint)
         {
             CurrentWaypointIndex = GetNearestWaypointIndex();
             Util.DebugMsg("CurrentWaypointIndex=" + CurrentWaypointIndex);
@@ -67,6 +67,7 @@ public class Path
         return Repeat || CurrentWaypointIndex < Waypoints.Length;
     }
 
+    // TODO: This is only accurate if we aren't traversing in reverse.
     public int Remaining()
     {
         return Waypoints.Length - CurrentWaypointIndex;
@@ -79,7 +80,7 @@ public class Path
 
         Current = Waypoints[CurrentWaypointIndex];
 
-        if(ReverseTravesale)
+        if (ReverseTravesale)
         {
             --CurrentWaypointIndex;
         }
@@ -88,9 +89,9 @@ public class Path
             ++CurrentWaypointIndex;
         }
 
-        if(Repeat && (CurrentWaypointIndex == Waypoints.Length || CurrentWaypointIndex < 0))
+        if (Repeat && (CurrentWaypointIndex == Waypoints.Length || CurrentWaypointIndex < 0))
         {
-            if(RepeatCircleAround)
+            if (RepeatCircleAround)
             {
                 CurrentWaypointIndex = 0;
             }
@@ -104,5 +105,5 @@ public class Path
         return Current;
     }
 
-    public LocalPlayer Local {get{return ObjectManager.Instance.Player;}}
+    public LocalPlayer Local { get { return ObjectManager.Instance.Player; } }
 }

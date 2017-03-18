@@ -381,7 +381,7 @@ public class SimpleGrinder : IBotBase
     {
         if (Target == null || CurrentTargetPath == null)
             return false;
-        return Target.Position.GetDistanceTo(CurrentTargetPath.GetFinalLocation()) >= radius;
+        return Target.Position.GetDistanceTo(CurrentTargetPath.GetFinalDestination()) >= radius;
     }
 
     private bool IsTargetReachable()
