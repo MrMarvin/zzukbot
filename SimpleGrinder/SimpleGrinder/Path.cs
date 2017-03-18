@@ -19,6 +19,11 @@ public class Path
         this.RepeatCircleAround = RepeatCircleAround;
     }
 
+    public Location GetFinalDestination()
+    {
+        return Waypoints[Waypoints.Length - 1];
+    }
+
     int GetNearestWaypointIndex()
     {
         int BestIndex = -1;
@@ -61,17 +66,18 @@ public class Path
     {
         return Repeat || CurrentWaypointIndex < Waypoints.Length;
     }
-
-    public int Remaining()
+	
+	// TODO: This is only accurate if we aren't traversing in reverse.
+	public int Remaining()
     {
         return Waypoints.Length - CurrentWaypointIndex;
     }
 
     public Location Next()
     {
-        if (CurrentWaypointIndex >= Waypoints.Length)
+		if (CurrentWaypointIndex >= Waypoints.Length)
             return null;
-
+		
         Current = Waypoints[CurrentWaypointIndex];
 
         if(ReverseTravesale)
