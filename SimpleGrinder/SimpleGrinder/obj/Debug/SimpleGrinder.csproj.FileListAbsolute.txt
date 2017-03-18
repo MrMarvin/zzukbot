@@ -3,5 +3,15 @@ D:\ZzukBot3\external_bot_bases_souce\zzukbot\SimpleGrinder\SimpleGrinder\obj\Deb
 D:\ZzukBot3\external_bot_bases_souce\zzukbot\SimpleGrinder\SimpleGrinder\obj\Debug\SimpleGrinder.csproj.GenerateResource.Cache
 D:\ZzukBot3\Botbases\open_grindr.dll
 D:\ZzukBot3\Botbases\open_grindr.pdb
-D:\ZzukBot3\external_bot_bases_souce\zzukbot\SimpleGrinder\SimpleGrinder\obj\Debug\open_grindr.dll
-D:\ZzukBot3\external_bot_bases_souce\zzukbot\SimpleGrinder\SimpleGrinder\obj\Debug\open_grindr.pdb
+D:\ZzukBot3\external_bot_bases_souce\zzukbot\SimpleGrinder\SimpleGrinder\bin\Debug\SimpleGrinder.dll
+D:\ZzukBot3\external_bot_bases_souce\zzukbot\SimpleGrinder\SimpleGrinder\bin\Debug\SimpleGrinder.pdb
+D:\ZzukBot3\external_bot_bases_souce\zzukbot\SimpleGrinder\SimpleGrinder\bin\Debug\ZzukBot.exe
+D:\ZzukBot3\external_bot_bases_souce\zzukbot\SimpleGrinder\SimpleGrinder\bin\Debug\Fasm.NET.dll
+D:\ZzukBot3\external_bot_bases_souce\zzukbot\SimpleGrinder\SimpleGrinder\bin\Debug\SharpDX.Mathematics.dll
+D:\ZzukBot3\external_bot_bases_souce\zzukbot\SimpleGrinder\SimpleGrinder\bin\Debug\SharpDX.Direct3D9.dll
+D:\ZzukBot3\external_bot_bases_souce\zzukbot\SimpleGrinder\SimpleGrinder\bin\Debug\SharpDX.dll
+D:\ZzukBot3\external_bot_bases_souce\zzukbot\SimpleGrinder\SimpleGrinder\bin\Debug\FluentBehaviourTree.dll
+D:\ZzukBot3\external_bot_bases_souce\zzukbot\SimpleGrinder\SimpleGrinder\bin\Debug\Newtonsoft.Json.dll
+D:\ZzukBot3\external_bot_bases_souce\zzukbot\SimpleGrinder\SimpleGrinder\bin\Debug\ZzukBot.xml
+D:\ZzukBot3\external_bot_bases_souce\zzukbot\SimpleGrinder\SimpleGrinder\obj\Debug\SimpleGrinder.dll
+D:\ZzukBot3\external_bot_bases_souce\zzukbot\SimpleGrinder\SimpleGrinder\obj\Debug\SimpleGrinder.pdb
