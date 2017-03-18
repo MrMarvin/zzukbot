@@ -46,14 +46,15 @@
             this.label5 = new System.Windows.Forms.Label();
             this.TextBoxMobSearchRadius = new System.Windows.Forms.TextBox();
             this.label6 = new System.Windows.Forms.Label();
-            this.btnLoadProfile = new System.Windows.Forms.Button();
+            this.ProfileNameLabel = new System.Windows.Forms.Label();
+            this.ButtonLoadProfile = new System.Windows.Forms.Button();
             this.groupBox1.SuspendLayout();
             this.SuspendLayout();
             // 
             // CheckBoxLoot
             // 
             this.CheckBoxLoot.AutoSize = true;
-            this.CheckBoxLoot.Location = new System.Drawing.Point(257, 29);
+            this.CheckBoxLoot.Location = new System.Drawing.Point(291, 11);
             this.CheckBoxLoot.Name = "CheckBoxLoot";
             this.CheckBoxLoot.Size = new System.Drawing.Size(47, 17);
             this.CheckBoxLoot.TabIndex = 0;
@@ -64,7 +65,7 @@
             // CheckBoxSkin
             // 
             this.CheckBoxSkin.AutoSize = true;
-            this.CheckBoxSkin.Location = new System.Drawing.Point(310, 29);
+            this.CheckBoxSkin.Location = new System.Drawing.Point(291, 34);
             this.CheckBoxSkin.Name = "CheckBoxSkin";
             this.CheckBoxSkin.Size = new System.Drawing.Size(47, 17);
             this.CheckBoxSkin.TabIndex = 1;
@@ -114,7 +115,7 @@
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(254, 65);
+            this.label1.Location = new System.Drawing.Point(254, 64);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(31, 13);
             this.label1.TabIndex = 6;
@@ -123,7 +124,7 @@
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(253, 97);
+            this.label2.Location = new System.Drawing.Point(253, 94);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(32, 13);
             this.label2.TabIndex = 7;
@@ -132,7 +133,7 @@
             // label3
             // 
             this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(235, 128);
+            this.label3.Location = new System.Drawing.Point(235, 133);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(50, 13);
             this.label3.TabIndex = 8;
@@ -149,7 +150,7 @@
             // ComboBoxDrink
             // 
             this.ComboBoxDrink.FormattingEnabled = true;
-            this.ComboBoxDrink.Location = new System.Drawing.Point(291, 91);
+            this.ComboBoxDrink.Location = new System.Drawing.Point(291, 94);
             this.ComboBoxDrink.Name = "ComboBoxDrink";
             this.ComboBoxDrink.Size = new System.Drawing.Size(164, 21);
             this.ComboBoxDrink.TabIndex = 10;
@@ -157,7 +158,7 @@
             // ComboBoxPetFood
             // 
             this.ComboBoxPetFood.FormattingEnabled = true;
-            this.ComboBoxPetFood.Location = new System.Drawing.Point(291, 125);
+            this.ComboBoxPetFood.Location = new System.Drawing.Point(291, 130);
             this.ComboBoxPetFood.Name = "ComboBoxPetFood";
             this.ComboBoxPetFood.Size = new System.Drawing.Size(164, 21);
             this.ComboBoxPetFood.TabIndex = 11;
@@ -173,7 +174,7 @@
             // 
             // TextBoxDrinkPercentage
             // 
-            this.TextBoxDrinkPercentage.Location = new System.Drawing.Point(461, 92);
+            this.TextBoxDrinkPercentage.Location = new System.Drawing.Point(461, 94);
             this.TextBoxDrinkPercentage.Name = "TextBoxDrinkPercentage";
             this.TextBoxDrinkPercentage.Size = new System.Drawing.Size(34, 20);
             this.TextBoxDrinkPercentage.TabIndex = 13;
@@ -201,7 +202,7 @@
             // 
             // TextBoxMobSearchRadius
             // 
-            this.TextBoxMobSearchRadius.Location = new System.Drawing.Point(342, 163);
+            this.TextBoxMobSearchRadius.Location = new System.Drawing.Point(344, 157);
             this.TextBoxMobSearchRadius.Name = "TextBoxMobSearchRadius";
             this.TextBoxMobSearchRadius.Size = new System.Drawing.Size(33, 20);
             this.TextBoxMobSearchRadius.TabIndex = 16;
@@ -210,28 +211,38 @@
             // label6
             // 
             this.label6.AutoSize = true;
-            this.label6.Location = new System.Drawing.Point(235, 166);
+            this.label6.Location = new System.Drawing.Point(237, 160);
             this.label6.Name = "label6";
             this.label6.Size = new System.Drawing.Size(101, 13);
             this.label6.TabIndex = 17;
             this.label6.Text = "Mob Search Radius";
             // 
-            // btnLoadProfile
+            // ProfileNameLabel
             // 
-            this.btnLoadProfile.Location = new System.Drawing.Point(238, 201);
-            this.btnLoadProfile.Name = "btnLoadProfile";
-            this.btnLoadProfile.Size = new System.Drawing.Size(75, 23);
-            this.btnLoadProfile.TabIndex = 18;
-            this.btnLoadProfile.Text = "Load Profile";
-            this.btnLoadProfile.UseVisualStyleBackColor = true;
-            this.btnLoadProfile.Click += new System.EventHandler(this.btnLoadProfile_Click);
+            this.ProfileNameLabel.AutoSize = true;
+            this.ProfileNameLabel.Location = new System.Drawing.Point(88, 235);
+            this.ProfileNameLabel.Name = "ProfileNameLabel";
+            this.ProfileNameLabel.Size = new System.Drawing.Size(260, 13);
+            this.ProfileNameLabel.TabIndex = 18;
+            this.ProfileNameLabel.Text = "No profile loaded!";
+            // 
+            // ButtonLoadProfile
+            // 
+            this.ButtonLoadProfile.Location = new System.Drawing.Point(11, 230);
+            this.ButtonLoadProfile.Name = "ButtonLoadProfile";
+            this.ButtonLoadProfile.Size = new System.Drawing.Size(71, 23);
+            this.ButtonLoadProfile.TabIndex = 19;
+            this.ButtonLoadProfile.Text = "Load Profile";
+            this.ButtonLoadProfile.UseVisualStyleBackColor = true;
+            this.ButtonLoadProfile.Click += new System.EventHandler(this.Event_GUIHandler);
             // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(558, 261);
-            this.Controls.Add(this.btnLoadProfile);
+            this.Controls.Add(this.ButtonLoadProfile);
+            this.Controls.Add(this.ProfileNameLabel);
             this.Controls.Add(this.label6);
             this.Controls.Add(this.TextBoxMobSearchRadius);
             this.Controls.Add(this.label5);
@@ -275,7 +286,8 @@
         public System.Windows.Forms.ComboBox ComboBoxDrink;
         public System.Windows.Forms.ComboBox ComboBoxPetFood;
         public System.Windows.Forms.TextBox TextBoxMobSearchRadius;
-        private System.Windows.Forms.Button btnLoadProfile;
+        public System.Windows.Forms.Button ButtonLoadProfile;
+        public System.Windows.Forms.Label ProfileNameLabel;
     }
 }
 
