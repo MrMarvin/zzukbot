@@ -1,11 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System;
 using System.Windows.Forms;
 
 namespace GUI
@@ -16,11 +9,16 @@ namespace GUI
         {
             InitializeComponent();
             
-            CheckBoxLoot.Checked = Settings.Looting;
-            CheckBoxSkin.Checked = Settings.Skinning;
-            TextBoxFoodPercentage.Text = Settings.EatAt.ToString();
-            TextBoxDrinkPercentage.Text = Settings.DrinkAt.ToString();
-            TextBoxMobSearchRadius.Text = Settings.SearchMobRange.ToString();
+            CheckBoxLoot.Checked = Settings.Instance.Looting;
+            CheckBoxSkin.Checked = Settings.Instance.Skinning;
+            TextBoxFoodPercentage.Text = Settings.Instance.EatAt.ToString();
+            TextBoxDrinkPercentage.Text = Settings.Instance.DrinkAt.ToString();
+            TextBoxMobSearchRadius.Text = Settings.Instance.SearchMobRange.ToString();
+            
+            if(Settings.Instance.ProfileFilePath != null)
+            {
+                ProfileNameLabel.Text = System.IO.Path.GetFileName(Settings.Instance.ProfileFilePath);
+            }
         }
 
         void Event_KeyPress(object Sender, KeyPressEventArgs Args)
@@ -42,27 +40,45 @@ namespace GUI
         {
             if(Sender == CheckBoxLoot)
             {
-                Settings.Looting = CheckBoxLoot.Checked;
+                Settings.Instance.Looting = CheckBoxLoot.Checked;
+                Settings.SaveSettings();
             }
             else if(Sender == CheckBoxSkin)
             {
-                Settings.Skinning = CheckBoxSkin.Checked;
+                Settings.Instance.Skinning = CheckBoxSkin.Checked;
+                Settings.SaveSettings();
             }
             else if(Sender == TextBoxFoodPercentage)
             {
-                Settings.EatAt = int.Parse(TextBoxFoodPercentage.Text);
+                Settings.Instance.EatAt = int.Parse(TextBoxFoodPercentage.Text);
+                Settings.SaveSettings();
             }
             else if(Sender == TextBoxDrinkPercentage)
             {
-                Settings.DrinkAt = int.Parse(TextBoxDrinkPercentage.Text);
+                Settings.Instance.DrinkAt = int.Parse(TextBoxDrinkPercentage.Text);
+                Settings.SaveSettings();
             }
             else if(Sender == TextBoxMobSearchRadius)
             {
-                Settings.SearchMobRange = int.Parse(TextBoxMobSearchRadius.Text);
+                Settings.Instance.SearchMobRange = int.Parse(TextBoxMobSearchRadius.Text);
+                Settings.SaveSettings();
             }
             else if(Sender == ButtonAddProtectedItem)
             {
                 ComboBoxProtectedItem.Text = "";
+            }
+            else if(Sender == ButtonLoadProfile)
+            {
+                OpenFileDialog Dialog = new OpenFileDialog();
+                Dialog.Filter = "V1 profile (*.xml)|*.xml";
+                Dialog.Title = "Select a profile";
+
+                if(Dialog.ShowDialog(this) == DialogResult.OK)
+                {
+                    Settings.Instance.ProfileFilePath = Dialog.FileName;
+                    ProfileNameLabel.Text = System.IO.Path.GetFileName(Dialog.FileName);
+                    Settings.SaveSettings();
+                }
             }
         }
 
@@ -70,16 +86,6 @@ namespace GUI
         {
             Args.Cancel = true;
             this.Hide();
-        }
-
-        private void btnLoadProfile_Click(object sender, EventArgs e)
-        {
-            OpenFileDialog fileDialog = new OpenFileDialog();
-
-            if (fileDialog.ShowDialog() == DialogResult.OK)
-            {
-                SimpleGrinder.CurrentProfile = Profile.ParseV1Profile(fileDialog.FileName);
-            }
         }
     }
 }
