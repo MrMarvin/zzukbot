@@ -1,4 +1,4 @@
-using ZzukBot.Settings;
+﻿using ZzukBot.Settings;
 
 public class Settings
 {

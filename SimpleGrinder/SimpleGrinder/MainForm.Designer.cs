@@ -1,4 +1,4 @@
-namespace GUI
+﻿namespace GUI
 {
     partial class MainForm
     {
@@ -290,3 +290,4 @@ namespace GUI
         public System.Windows.Forms.Label ProfileNameLabel;
     }
 }
+
