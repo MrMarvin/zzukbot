@@ -10,13 +10,18 @@ public class Path
 
     public bool Repeat;
     public bool RepeatCircleAround;
-    
+
     public Path(Location[] Waypoints, bool Repeat, bool RepeatCircleAround)
     {
         this.Waypoints = Waypoints;
         this.Current = Waypoints[0];
         this.Repeat = Repeat;
         this.RepeatCircleAround = RepeatCircleAround;
+    }
+
+    public Location GetFinalLocation()
+    {
+        return Waypoints[Waypoints.Length - 1];
     }
 
     int GetNearestWaypointIndex()

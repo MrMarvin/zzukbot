@@ -307,19 +307,18 @@ public class SimpleGrinder : IBotBase
 
     private void TickLivingHotSpot()
     {
-        Util.DebugMsg("TickLivingHotspot()");
-        if (Local.IsCtmIdle)
+        if (RecalculatePath)
         {
-            if (RecalculatePath)
-            {
-                ProfileGrindPath.CalculatePath();
-                RecalculatePath = false;
-            }
+            ProfileGrindPath.CalculatePath();
+            RecalculatePath = false;
+        }
 
+        if (ProfileGrindPath.ReachedWaypoint(2.0f))
+        {
             Location Next = ProfileGrindPath.Next();
             if (Next != null)
             {
-                Util.DebugMsg("CtmTo: " + Next.X + " " + Next.Y + " " + Next.Z);
+                Util.DebugMsg("CtmTo to next Hostspot: " + Next.X + " " + Next.Y + " " + Next.Z);
                 Local.CtmTo(Next);
             }
         }
@@ -337,28 +336,52 @@ public class SimpleGrinder : IBotBase
         }
         else
         {
-           // Util.DebugMsg("not in range for Combat, moving closer");
-            if (CurrentTargetPath == null)
-            {
-                Util.DebugMsg("no path to current target yet, calculating one");
-                ProfileGrindPath.CalculatePathToTarget(Target);
-                CurrentTargetPath = ProfileGrindPath.CurrentPath;
-                RecalculatePath = true;
-            }
-            if (Local.IsCtmIdle)
-            {
-                Location Next = CurrentTargetPath.Next();
-                if (Next != null)
-                {
-                    Util.DebugMsg("next CTM "+ CurrentTargetPath.Remaining() +" to target: " + Next.X + " " + Next.Y + " " + Next.Z);
-                    Local.CtmTo(Next);
-                } else
-                {
-                    Util.DebugMsg("reached end of CTM path to target but not quite there yet... recalculating new path on next tick.");
-                    CurrentTargetPath = null;
-                }
-            }
+            ApproachTarget();
         }
+    }
+
+    private void ApproachTarget()
+    {
+        if (Local.InLosWith(Target))
+        {
+            Local.CtmTo(Target.Position);
+            return;
+        }
+
+        if (TargetMovedFromItsLocation(1.0f))
+        {
+            Util.DebugMsg("Target moved from where we last calculated waypoints to, resetting waypoints");
+            CurrentTargetPath = null;
+        }
+
+        if (CurrentTargetPath == null)
+        {
+            Util.DebugMsg("no path to current target yet, calculating one");
+            ProfileGrindPath.CalculatePathToTarget(Target);
+            CurrentTargetPath = ProfileGrindPath.CurrentPath;
+            RecalculatePath = true;
+        }
+
+        if (ProfileGrindPath.ReachedWaypoint(1.0f))
+        {
+            Location Next = CurrentTargetPath.Next();
+            if (Next == null)
+            {
+                Util.DebugMsg("reached end of CTM path to target but not quite there yet... recalculating new path on next tick.");
+                CurrentTargetPath = null;
+                return;
+            }
+
+            Util.DebugMsg("next CTM " + CurrentTargetPath.Remaining() + " to target: " + Next.X + " " + Next.Y + " " + Next.Z);
+            Local.CtmTo(Next);
+        }
+    }
+
+    private bool TargetMovedFromItsLocation(float radius = 3.0f)
+    {
+        if (Target == null || CurrentTargetPath == null)
+            return false;
+        return Target.Position.GetDistanceTo(CurrentTargetPath.GetFinalLocation()) >= radius;
     }
 
     private bool IsTargetReachable()

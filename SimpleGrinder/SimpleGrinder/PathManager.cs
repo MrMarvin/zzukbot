@@ -6,7 +6,7 @@ public class PathManager
     public Location CurrentDest;
     public Path HotspotPath;
     public Path CurrentPath;
-    
+
     public PathManager(Location[] Hotspots, bool Repeat=false, bool RepeatCircleAround=false)
     {
         HotspotPath = new Path(Hotspots, Repeat, RepeatCircleAround);
@@ -17,7 +17,7 @@ public class PathManager
         HotspotPath.Reset(NearestWaypoint);
         CalculatePath();
     }
-    
+
     public void CalculatePathToTarget(WoWUnit target)
     {
         Util.DebugMsg("Calculating Path to target: " + target.Name);
@@ -38,7 +38,7 @@ public class PathManager
         CurrentPath = new Path(Path, false, false);
     }
 
-    public bool ReachedWaypoint()
+    public bool ReachedWaypoint(float radius = 5.0f)
     {
         return Local.IsCtmIdle || (CurrentDest == null || CurrentDest.GetDistanceTo(Local.Position) < 5.0f);
     }
@@ -50,7 +50,7 @@ public class PathManager
 
         return HotspotPath.HasNext() || CurrentPath.HasNext();
     }
-    
+
     public Location Next()
     {
         if(CurrentPath == null)
@@ -71,7 +71,7 @@ public class PathManager
                 CalculatePath();
             }
         }
-        
+
         CurrentDest = CurrentPath.Next();
         return CurrentDest;
     }
