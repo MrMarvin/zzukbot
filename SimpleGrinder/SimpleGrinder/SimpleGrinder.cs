@@ -9,25 +9,24 @@ using static ZzukBot.Constants.Enums;
 using System.Collections.Generic;
 using GUI;
 using System.Windows.Forms;
+using ZzukBot.Game.Frames;
 
 [Export(typeof(IBotBase))]
 public class SimpleGrinder : IBotBase
 {
-    public static Profile CurrentProfile;
+    public Profile CurrentProfile;
     public MainForm GUI;
-    public bool UserSetGhostPath;
     public bool UserSetVendorPath;
         
     public bool RecalculatePath;
-    public bool WasAlive;
     public bool ReadyToPull;
     
     public Action StopCallback;
-    public PathManager ProfileGhostPath;
-    public PathManager ProfileVendorPath;
     public PathManager ProfileGrindPath;
     public int NextTickTime;
-
+    public PathManager CurrentPath;
+    public float CurrentPathAcceptableDistance;
+    
     public WoWUnit GetNpcByName(string Name)
     {
         WoWUnit Result = null;
@@ -49,17 +48,14 @@ public class SimpleGrinder : IBotBase
         WoWUnit BestUnit = null;
         float BestDistance = Radius;
 
-        foreach(WoWUnit Npc in NpcLootables)
+        foreach(WoWUnit Npc in UnitInfo.Instance.Lootable)
         {
-            if(Npc.CanBeLooted)
-            {
-                float Distance = Npc.DistanceToPlayer;
+            float Distance = Npc.DistanceToPlayer;
 
-                if(Distance < BestDistance)
-                {
-                    BestUnit = Npc;
-                    BestDistance = Distance;
-                }
+            if(Distance < BestDistance)
+            {
+                BestUnit = Npc;
+                BestDistance = Distance;
             }
         }
 
@@ -131,11 +127,9 @@ public class SimpleGrinder : IBotBase
         CustomClasses.Instance.Refresh();
 
         int CustomClassIndex = 0;
-        Util.DebugMsg("Found CCs: " + CustomClasses.Instance.Enumerator.Count);
-        foreach (CustomClass CC in CustomClasses.Instance.Enumerator)
+        foreach(CustomClass CC in CustomClasses.Instance.Enumerator)
         {
-            Util.DebugMsg("Using CustomClass: [" + CC.Author + " " + CC.Name + " " + CC.Class.ToString() + "]");
-            if (CC.Class == LocalClass)
+            if(CC.Class == LocalClass)
             {
                 CustomClasses.Instance.SetCurrent(CustomClassIndex);
                 Loaded = true;
@@ -147,281 +141,263 @@ public class SimpleGrinder : IBotBase
 
         return Loaded;
     }
-    
+
     public int Tick()
     {
-        if (Local.IsDead)
+        int DelayTime = 0;
+        
+        if(Local.IsDead)
         {
-            TickDead();  
-        } else if (Local.InGhostForm)
-        {
-            TickGhostForm();
-        } else 
-        {
-            TickLiving();
-        }
-        return 100;
-    }
-
-    private void TickGhostForm()
-    {
-        RecalculatePath = true;
-
-        if (WasAlive)
-        {
-            WasAlive = false;
-
-            if (UserSetGhostPath)
-            {
-                ProfileGhostPath.Reset(true);
-            }
-            else
-            {
-                ProfileGhostPath = new PathManager(new Location[] { Local.CorpsePosition });
-            }
+            Local.RepopMe();
+            return 500;
         }
 
-        if (ProfileGhostPath.ReachedWaypoint())
+        if(Local.InGhostForm && CurrentPath == null)
         {
-            if (ProfileGhostPath.HasNext())
+            RecalculatePath = true;
+
+            if(Local.CorpsePosition.GetDistanceTo(Local.Position) <= 11)
             {
-                Location Next = ProfileGhostPath.Next();
-                if (Next != null)
+                if(Local.TimeUntilResurrect == 0)
                 {
-                    Util.DebugMsg("next CTM " + ProfileGhostPath.CurrentPath.Remaining() + " to corpse: " + Next.X + " " + Next.Y + " " + Next.Z);
-                    Local.CtmTo(Next);
+                    Local.RetrieveCorpse();
                 }
             }
             else
             {
-                // TODO: Reached destination!
-                if (Local.TimeUntilResurrect == 0)
+                /*if(CurrentProfile.GhostHotspots != null)
                 {
-                    Lua.Instance.Execute("RetrieveCorpse();");
-                    Util.DebugMsg("RetrieveCorpse();");
+                    CurrentPath = new PathManager(CurrentProfile.GhostHotspots);
+                    CurrentPath.Reset(true);
                 }
+                else*/
+                {
+                    CurrentPath = new PathManager(new Location[] {Local.CorpsePosition});
+                }
+
+                CurrentPathAcceptableDistance = 10;
             }
         }
-        else
-        {
-            Local.CtmTo(ProfileGhostPath.CurrentDest);
-            Util.DebugMsg("CTM current" + ": " + ProfileGhostPath.CurrentDest.X + " " + ProfileGhostPath.CurrentDest.Y + " " + ProfileGhostPath.CurrentDest.Z);
-        }
-    }
 
-    private void TickLiving()
-    {
-        WasAlive = true;
-
-        if (Local.IsInCombat && NpcAttackers.Count > 0)
+        if(Local.IsInCombat && NpcAttackers.Count > 0)
         {
-            TickCombat();
-            return;
-        }
+            CurrentPath = null;
+            RecalculatePath = true;
+            ReadyToPull = false;
 
-        if (ReadyToPull)
-        {
-            if (HasNoTarget())
+            if(Target == null || Target.Health <= 0)
             {
-                Util.DebugMsg("No current Target, aquiring one...");
-                WoWUnit BestUnit = GetClosestMob(Settings.Instance.SearchMobRange);
+                WoWUnit BestUnit = GetBestAttacker();
 
-                if (BestUnit != null)
+                if(BestUnit != null)
                 {
                     Local.SetTarget(BestUnit);
                 }
             }
 
-            if (Target != null)
+            if(Target != null)
             {
-                TickLivingTarget();
-            }
-            else
-            {
-                TickLivingHotSpot();
-            }
-        }
-        // NOTE: Stand idle if we have rez sickness unless attacked.
-        if (Local.GotDebuff("Resurrection Sickness"))
-            return;
+                Local.Face(Target);
 
-        else
-        {
-            WoWUnit LootUnit = GetClosestLootable(Settings.Instance.SearchMobRange);
-            if (LootUnit != null)
-            {
-                TickLivingLoot();      
-            }
-            else
-            {
-                TickLivingRest();         
-            }
-        }
-    }
-
-    private void TickLivingRest()
-    {
-        if (Local.HealthPercent < Settings.Instance.EatAt ||
-                   (Util.IsManaClass(Local.Class) && Local.ManaPercent < Settings.Instance.DrinkAt))
-        {
-            if (!Local.IsEating || !Local.IsDrinking)
-            {
-                CurrentCC.OnRest();
-
-                bool ForceDrink = false;
-                if (Settings.Instance.Food != null &&
-                    !Local.IsEating &&
-                    Local.HealthPercent < Settings.Instance.EatAt)
+                if(Target.DistanceToPlayer <= CurrentCC.CombatDistance)
                 {
-                    Local.Eat(Settings.Instance.Food);
-                    ForceDrink = Settings.Instance.AlwaysDrinkWhenEating;
+                    Local.CtmStopMovement();
+                    CurrentCC.OnFight();
+                    DelayTime = 100;
                 }
-
-                if (Settings.Instance.Drink != null &&
-                    !Local.IsDrinking &&
-                    (ForceDrink || Local.ManaPercent < Settings.Instance.DrinkAt) &&
-                    Util.IsManaClass(Local.Class))
-                {
-                    Local.Drink(Settings.Instance.Drink);
-                }
-            }
-        }
-        else if (CurrentCC.OnBuff())
-        {
-            ReadyToPull = true;
-        }
-    }
-
-    private void TickLivingLoot()
-    {
-        Util.DebugMsg("TickLivingLoot");
-        WoWUnit LootUnit = GetClosestLootable(Settings.Instance.SearchMobRange);
-        if (LootUnit.DistanceToPlayer <= 3)
-        {
-            CurrentTargetPath = null;
-            Local.CtmStopMovement();
-            LootUnit.Interact(true);
-            return;
-        }
-
-        if (CurrentTargetPath == null)
-        {
-            ProfileGrindPath.CalculatePathToTarget(LootUnit);
-            CurrentTargetPath = ProfileGrindPath.CurrentPath;
-            RecalculatePath = true;
-        }
-        if (Local.IsCtmIdle)
-        {
-            Location Next = ProfileGrindPath.Next();
-            if (Next != null)
-            {
-                Util.DebugMsg("next CTM " + CurrentTargetPath.Remaining() + " to LootUnit: " + Next.X + " " + Next.Y + " " + Next.Z);
-                Local.CtmTo(Next);
-            }
-            else
-            {
-                Local.CtmTo(LootUnit.Position);
-            }
-        }      
-    }
-
-    private void TickLivingHotSpot()
-    {
-        Util.DebugMsg("TickLivingHotspot()");
-        if (Local.IsCtmIdle)
-        {
-            if (RecalculatePath)
-            {
-                ProfileGrindPath.CalculatePath();
-                RecalculatePath = false;
-            }
-
-            Location Next = ProfileGrindPath.Next();
-            if (Next != null)
-            {
-                Util.DebugMsg("CtmTo: " + Next.X + " " + Next.Y + " " + Next.Z);
-                Local.CtmTo(Next);
-            }
-        }
-    }
-
-    private void TickLivingTarget()
-    {
-        if (Target.DistanceToPlayer <= CurrentCC.CombatDistance)
-        {
-            Util.DebugMsg("In range for Combat, cancelling movement for now");
-            CurrentTargetPath = null;
-            Local.CtmStopMovement();
-            Local.Face(Target);
-            CurrentCC.OnPull();
-        }
-        else
-        {
-           // Util.DebugMsg("not in range for Combat, moving closer");
-            if (CurrentTargetPath == null)
-            {
-                Util.DebugMsg("no path to current target yet, calculating one");
-                ProfileGrindPath.CalculatePathToTarget(Target);
-                CurrentTargetPath = ProfileGrindPath.CurrentPath;
-                RecalculatePath = true;
-            }
-            if (Local.IsCtmIdle)
-            {
-                Location Next = CurrentTargetPath.Next();
-                if (Next != null)
-                {
-                    Util.DebugMsg("next CTM "+ CurrentTargetPath.Remaining() +" to target: " + Next.X + " " + Next.Y + " " + Next.Z);
-                    Local.CtmTo(Next);
-                } else
+                else
                 {
                     Local.CtmTo(Target.Position);
                 }
             }
         }
-    }
-
-    private bool HasNoTarget()
-    {
-        return (Target == null || Target.Health < 1 || (Target.IsInCombat && !Target.IsFleeing && Target.TargetGuid != Local.Guid && (!Local.HasPet || Target.TargetGuid != LocalPet.Guid)));
-    }
-
-    private void TickCombat()
-    {
-        RecalculatePath = true;
-        ReadyToPull = false;
-
-        if (Target == null || Target.Health <= 0)
+        else if(CurrentPath != null)
         {
-            WoWUnit BestUnit = GetBestAttacker();
-
-            if (BestUnit != null)
-            {
-                Local.SetTarget(BestUnit);
-            }
-        }
-
-        if (Target != null)
-        {
-            Local.Face(Target);
-
-            if (Target.DistanceToPlayer <= CurrentCC.CombatDistance)
+            if(CurrentPath.DistanceToDestination <= CurrentPathAcceptableDistance)
             {
                 Local.CtmStopMovement();
-                CurrentCC.OnFight();
+                CurrentPath = null;
+                CurrentPathAcceptableDistance = 0;
+            }
+            else if(CurrentPath.ReachedWaypoint())
+            {
+                if(CurrentPath.HasNext())
+                {
+                    Location Next = CurrentPath.Next();
+                    if(Next != null)
+                    {
+                        Local.CtmTo(Next);
+                        //Util.DebugMsg("CTM next" + ": " + Next.X + " " + Next.Y + " " + Next.Z);
+                    }
+                }
+                else
+                {
+                    // NOTE: Reached destination!
+                    Local.CtmStopMovement();
+                    CurrentPath = null;
+                    CurrentPathAcceptableDistance = 0;
+                }
             }
             else
             {
-                Local.CtmTo(Target.Position);
+                Local.CtmTo(CurrentPath.CurrentDest);
             }
         }
-    }
+        else if(ReadyToPull)
+        {
+            if(Target == null || Target.Health < 1 || (Target.IsInCombat && !Target.IsFleeing && Target.TargetGuid != Local.Guid && (!Local.HasPet || Target.TargetGuid != LocalPet.Guid)))
+            {
+                WoWUnit BestUnit = GetClosestMob(Settings.Instance.SearchMobRange);
 
-    private void TickDead()
-    {
-        Lua.Instance.Execute("RepopMe();");
-        Util.DebugMsg("RepopMe();");
-    }
+                if(BestUnit != null)
+                {
+                    Local.SetTarget(BestUnit);
+                }
+            }
 
+            if(Target != null)
+            {
+                Local.Face(Target);
+                CurrentCC.OnPull();
+
+                if(Target.DistanceToPlayer <= CurrentCC.CombatDistance)
+                {
+                    Local.CtmStopMovement();
+                }
+                else
+                {
+                    Local.CtmTo(Target.Position);
+                }
+
+                RecalculatePath = true;
+            }
+            else
+            {
+                if(Local.IsCtmIdle)
+                {
+                    if(RecalculatePath)
+                    {
+                        ProfileGrindPath.CalculatePath();
+                        RecalculatePath = false;
+                    }
+                                            
+                    Location Next = ProfileGrindPath.Next();
+                    if(Next != null)
+                    {
+                        //DebugMsg("CtmTo: " + Next.X + " " + Next.Y + " " + Next.Z);
+                        //DebugMsg("Local: " + Local.Position.X + " " + Local.Position.Y + " " + Local.Position.Z);
+                        Local.CtmTo(Next);
+                    }
+                }
+            }
+        }
+        // NOTE: Stand idle if we have rez sickness unless attacked.
+        else if(!Local.GotDebuff("Resurrection Sickness"))
+        {
+            if(Local.HealthPercent < Settings.Instance.EatAt ||
+                (Util.IsManaClass(Local.Class) && Local.ManaPercent < Settings.Instance.DrinkAt))
+            {
+                if(!Local.IsEating || !Local.IsDrinking)
+                {
+                    Util.DebugMsg("Regen");
+                    CurrentCC.OnRest();
+                    DelayTime = 100;
+
+                    bool ForceDrink = false;
+                    if(Settings.Instance.Food != null &&
+                        !Local.IsEating &&
+                        Local.HealthPercent < Settings.Instance.EatAt)
+                    {
+                        Local.Eat(Settings.Instance.Food);
+                        ForceDrink = Settings.Instance.AlwaysDrinkWhenEating;
+                    }
+
+                    if(Settings.Instance.Drink != null &&
+                        !Local.IsDrinking &&
+                        (ForceDrink || Local.ManaPercent < Settings.Instance.DrinkAt) &&
+                        Util.IsManaClass(Local.Class))
+                    {
+                        Local.Drink(Settings.Instance.Drink);
+                    }
+                }
+            }
+            else if(CurrentProfile.RepairNpcPosition != null && Inventory.Instance.CountFreeSlots(false) <= 3)
+            {
+                if(MerchantFrame.IsOpen)
+                {
+                    if(MerchantFrame.Instance.CanRepair)
+                    {
+                        MerchantFrame.Instance.RepairAll();
+                    }
+                }
+                else if(CurrentProfile.RepairNpcPosition.GetDistanceTo(Local.Position) <= 3)
+                {
+                    WoWUnit Vendor = GetNpcByName(CurrentProfile.RepairNpcName);
+
+                    if(Vendor != null)
+                    {
+                        Vendor.Interact(false);
+                        DelayTime = 500;
+                    }
+                }
+                else
+                {
+                    Util.DebugMsg("Generate path to vendor: " + CurrentProfile.RepairNpcPosition.GetDistanceTo(Local.Position));
+
+                    /*if(CurrentProfile.VendorHotspots != null)
+                    {
+                        CurrentPath = new PathManager(CurrentProfile.VendorHotspots);
+                        // TODO: Probably remove Reset method, and build into constructor.
+                        //CurrentPath.Reset(true);
+                    }
+                    else*/
+                    {
+                        CurrentPath = new PathManager(new Location[] {CurrentProfile.RepairNpcPosition});
+                    }
+
+                    CurrentPathAcceptableDistance = 3;
+                }
+            }
+            else
+            {
+                WoWUnit InteractUnit = null;
+
+                if(Settings.Instance.Looting)
+                {
+                    InteractUnit = GetClosestLootable(50.0f);
+                }
+
+                if(Settings.Instance.Skinning && InteractUnit == null)
+                {
+                    InteractUnit = GetClosestSkinnable(50.0f);
+                }
+                    
+                if(InteractUnit != null)
+                {
+                    if(InteractUnit.DistanceToPlayer <= 3)
+                    {
+                        InteractUnit.Interact(true);
+                        DelayTime = 100;
+                    }
+                    else
+                    {
+                        CurrentPath = new PathManager(new Location[] {InteractUnit.Position});
+                        CurrentPathAcceptableDistance = 3;
+                    }
+                }
+                else if(CurrentCC.OnBuff())
+                {
+                    Util.DebugMsg("OnBuff success");
+                    ReadyToPull = true;
+                    DelayTime = 100;
+                }
+            }
+        }
+        
+        
+        return DelayTime;
+    }
+    
     public void PauseBotbase(Action onPauseCallback)
     {
 
@@ -439,7 +415,7 @@ public class SimpleGrinder : IBotBase
 
         GUI.Visible = !GUI.Visible;
     }
-
+    
     public void Hook_EndScene(IntPtr Device)
     {
         if(ObjectManager.Instance.IsIngame)
@@ -450,7 +426,7 @@ public class SimpleGrinder : IBotBase
                 {
                     int Time = Tick();
 
-                    if(Time > 0)
+                    if(Time != -1)
                     {
                         NextTickTime = Environment.TickCount + Time;
                     }
@@ -464,7 +440,7 @@ public class SimpleGrinder : IBotBase
                     //Thread.Sleep(Environment.TickCount - NextTickTime);
                 }
             }
-            catch (Exception Ex)
+            catch(Exception Ex)
             {
                 Util.DebugMsg(Ex.ToString());
             }
@@ -490,7 +466,7 @@ public class SimpleGrinder : IBotBase
             MessageBox.Show("Must load a profile to start SimpleGrinder.");
             return false;
         }
-
+        
         CurrentProfile = Profile.ParseV1Profile(Settings.Instance.ProfileFilePath);
 
         if(CurrentProfile == null)
@@ -530,17 +506,13 @@ public class SimpleGrinder : IBotBase
         this.StopCallback = StopCallback;
 
         NextTickTime = Environment.TickCount;
-        WasAlive = true;  // NOTE: Important that this be true, even if the bot was started when dead.
         RecalculatePath = true;
         ReadyToPull = false;
+        ProfileGrindPath = null;
+        CurrentPath = null;
         
         ProfileGrindPath = new PathManager(CurrentProfile.Hotspots, true);
-        ProfileGrindPath.Reset(true);
-
-        ProfileGhostPath = UserSetGhostPath ? new PathManager(CurrentProfile.GhostHotspots) : null;
-        ProfileVendorPath = UserSetVendorPath ? new PathManager(CurrentProfile.VendorHotspots) : null;
-        
-        UserSetVendorPath = CurrentProfile.VendorHotspots.Length > 0;
+        ProfileGrindPath.Reset(true); // TODO: Add into constructor
 
         DirectX.Instance.OnEndSceneExecution += Hook_EndScene;
 
@@ -569,10 +541,8 @@ public class SimpleGrinder : IBotBase
     }
     
     public CustomClass CurrentCC {get{return CustomClasses.Instance.Current;}}
-    public List<WoWUnit> NpcLootables {get{return UnitInfo.Instance.Lootable;}}
     public List<WoWUnit> NpcAttackers {get{return UnitInfo.Instance.NpcAttackers;}}
     public WoWUnit Target {get{return ObjectManager.Instance.Target;}}
-    public Path CurrentTargetPath = null;
     public LocalPlayer Local {get{return ObjectManager.Instance.Player;}}
     public LocalPet LocalPet {get{return ObjectManager.Instance.Pet;}}
     public string Author { get { return "Blacknight"; } }
