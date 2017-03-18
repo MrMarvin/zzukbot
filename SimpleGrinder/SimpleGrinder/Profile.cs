@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Xml;
 using ZzukBot.Objects;
 
@@ -30,17 +30,22 @@ public class Profile
     
     public static Location[] ParseHotspots(XmlNodeList Parent)
     {
-        Location[] Hotspots = new Location[Parent.Count];
+        Location[] Hotspots = null;
         
-        for(int HotspotIndex = 0; HotspotIndex < Parent.Count; ++HotspotIndex)
+        if(Parent.Count > 0)
         {
-            XmlNode Node = Parent[HotspotIndex];
+            Hotspots = new Location[Parent.Count];
+        
+            for(int HotspotIndex = 0; HotspotIndex < Parent.Count; ++HotspotIndex)
+            {
+                XmlNode Node = Parent[HotspotIndex];
 
-            XmlNode X = Node.SelectSingleNode("X");
-            XmlNode Y = Node.SelectSingleNode("Y");
-            XmlNode Z = Node.SelectSingleNode("Z");
+                XmlNode X = Node.SelectSingleNode("X");
+                XmlNode Y = Node.SelectSingleNode("Y");
+                XmlNode Z = Node.SelectSingleNode("Z");
 
-            Hotspots[HotspotIndex] = new Location(float.Parse(X.InnerText), float.Parse(Y.InnerText), float.Parse(Z.InnerText));
+                Hotspots[HotspotIndex] = new Location(float.Parse(X.InnerText), float.Parse(Y.InnerText), float.Parse(Z.InnerText));
+            }
         }
 
         return Hotspots;
@@ -70,10 +75,10 @@ public class Profile
             {
                 XmlNode Node = Factions[FactionIndex];
                 Profile.Factions[FactionIndex] = int.Parse(Node.InnerText);
-                Util.DebugMsg("Faction[" + FactionIndex + "] = " + Profile.Factions[FactionIndex]);
+                //Util.DebugMsg("Faction[" + FactionIndex + "] = " + Profile.Factions[FactionIndex]);
             }
             
-            if(Repair.Count > 0)
+            if(Repair != null)
             {
                 XmlNode RepairNode = Repair[0];
                 
