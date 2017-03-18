@@ -8,13 +8,13 @@ using ZzukBot.ExtensionFramework.Classes;
 using static ZzukBot.Constants.Enums;
 using System.Collections.Generic;
 using GUI;
+using System.Windows.Forms;
 
 [Export(typeof(IBotBase))]
 public class SimpleGrinder : IBotBase
 {
     public static Profile CurrentProfile;
     public MainForm GUI;
-    public ClassId LoadedClass;
     public bool UserSetGhostPath;
     public bool UserSetVendorPath;
         
@@ -27,6 +27,22 @@ public class SimpleGrinder : IBotBase
     public PathManager ProfileVendorPath;
     public PathManager ProfileGrindPath;
     public int NextTickTime;
+
+    public WoWUnit GetNpcByName(string Name)
+    {
+        WoWUnit Result = null;
+
+        foreach(WoWUnit Npc in ObjectManager.Instance.Npcs)
+        {
+            if(Npc.Name == Name)
+            {
+                Result = Npc;
+                break;
+            }
+        }
+
+        return Result;
+    }
 
     public WoWUnit GetClosestLootable(float Radius)
     {
@@ -44,6 +60,25 @@ public class SimpleGrinder : IBotBase
                     BestUnit = Npc;
                     BestDistance = Distance;
                 }
+            }
+        }
+
+        return BestUnit;
+    }
+
+    public WoWUnit GetClosestSkinnable(float Radius)
+    {
+        WoWUnit BestUnit = null;
+        float BestDistance = Radius;
+
+        foreach(WoWUnit Npc in UnitInfo.Instance.Skinable)
+        {
+            float Distance = Npc.DistanceToPlayer;
+
+            if(Distance < BestDistance)
+            {
+                BestUnit = Npc;
+                BestDistance = Distance;
             }
         }
 
@@ -115,20 +150,6 @@ public class SimpleGrinder : IBotBase
     
     public int Tick()
     {
-        if(LoadedClass != Local.Class)
-        {
-            if(LoadCustomClass(Local.Class))
-            {
-                LoadedClass = Local.Class;
-                Util.DebugMsg("Using CustomClass: [" + CurrentCC.Author + " " + CurrentCC.Name + " " + CurrentCC.Class.ToString() + "]");
-            }
-            else
-            {
-                Util.DebugMsg("Failed to find a CustomClass that matched requirements.");
-                return 100;
-            }
-        }
-
         if (Local.IsDead)
         {
             TickDead();  
@@ -452,41 +473,79 @@ public class SimpleGrinder : IBotBase
 
     public bool Start(Action StopCallback)
     {
+        if(!ObjectManager.Instance.IsIngame)
+        {
+            MessageBox.Show("Must be in game to start SimpleGrinder.");
+            return false;
+        }
+
         if(this.StopCallback != null)
         {
             Util.DebugMsg("StopCallback was not null.");
             return false;
         }
 
-        Util.DebugMsg("Start!");
+        if(Settings.Instance.ProfileFilePath == null)
+        {
+            MessageBox.Show("Must load a profile to start SimpleGrinder.");
+            return false;
+        }
+
+        CurrentProfile = Profile.ParseV1Profile(Settings.Instance.ProfileFilePath);
+
+        if(CurrentProfile == null)
+        {
+            MessageBox.Show("Unable to load selected profile.");
+            Settings.Instance.ProfileFilePath = null;
+            Settings.SaveSettings();
+            GUI.ProfileNameLabel.Text = "";
+            return false;
+        }
+        
+        if(CurrentProfile.Hotspots != null)
+        {
+            Util.DebugMsg("Parsed " + CurrentProfile.Hotspots.Length + " hotspot(s).");
+        }
+
+        if(CurrentProfile.VendorHotspots != null)
+        {
+            Util.DebugMsg("Parsed " + CurrentProfile.VendorHotspots.Length + " vendor hotspot(s).");
+        }
+
+        if(CurrentProfile.GhostHotspots != null)
+        {
+            Util.DebugMsg("Parsed " + CurrentProfile.GhostHotspots.Length + " ghost hotspot(s).");
+        }
+
+        if(LoadCustomClass(Local.Class))
+        {
+            Util.DebugMsg("Using CustomClass: [" + CurrentCC.Author + " " + CurrentCC.Name + " " + CurrentCC.Class.ToString() + "]");
+        }
+        else
+        {
+            MessageBox.Show("Failed to load CustomClass (missing or multiple of same class)");
+            return false;
+        }
+        
         this.StopCallback = StopCallback;
 
         NextTickTime = Environment.TickCount;
         WasAlive = true;  // NOTE: Important that this be true, even if the bot was started when dead.
         RecalculatePath = true;
         ReadyToPull = false;
+        
+        ProfileGrindPath = new PathManager(CurrentProfile.Hotspots, true);
+        ProfileGrindPath.Reset(true);
 
-        // CurrentProfile = Profile.ParseV1Profile("D:\\hx\\wow1_v3\\Botbases\\[GRINDING] 8-10 Human (Near Goldshire).xml");
+        ProfileGhostPath = UserSetGhostPath ? new PathManager(CurrentProfile.GhostHotspots) : null;
+        ProfileVendorPath = UserSetVendorPath ? new PathManager(CurrentProfile.VendorHotspots) : null;
+        
+        UserSetVendorPath = CurrentProfile.VendorHotspots.Length > 0;
 
-        if(CurrentProfile != null)
-        {
-            Util.DebugMsg("Parsed " + CurrentProfile.Hotspots.Length + " hotspot(s).");
-            Util.DebugMsg("Parsed " + CurrentProfile.VendorHotspots.Length + " vendor hotspot(s).");
-            Util.DebugMsg("Parsed " + CurrentProfile.GhostHotspots.Length + " ghost hotspot(s).");
-                
-            ProfileGrindPath = new PathManager(CurrentProfile.Hotspots, true);
-            ProfileGrindPath.Reset(true);
-
-            ProfileGhostPath = UserSetGhostPath ? new PathManager(CurrentProfile.GhostHotspots) : null;
-            ProfileVendorPath = UserSetVendorPath ? new PathManager(CurrentProfile.VendorHotspots) : null;
-            
-            // UserSetGhostPath = CurrentProfile.GhostHotspots.Length > 0; // TODO: Implement, not really sure how to handle.
-            UserSetVendorPath = CurrentProfile.VendorHotspots.Length > 0;
-
-            DirectX.Instance.OnEndSceneExecution += Hook_EndScene;
-        }
+        DirectX.Instance.OnEndSceneExecution += Hook_EndScene;
 
         Local.EnableCtm();
+        Spell.UpdateSpellbook();
         return true;
     }
 
