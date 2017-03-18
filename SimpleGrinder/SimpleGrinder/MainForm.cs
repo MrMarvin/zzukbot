@@ -78,7 +78,6 @@ namespace GUI
                     Settings.Instance.ProfileFilePath = Dialog.FileName;
                     ProfileNameLabel.Text = System.IO.Path.GetFileName(Dialog.FileName);
                     Settings.SaveSettings();
-                    SimpleGrinder.CurrentProfile = Profile.ParseV1Profile(Dialog.FileName);
                 }
             }
         }
