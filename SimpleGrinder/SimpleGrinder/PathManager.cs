@@ -12,17 +12,29 @@ public class PathManager
         HotspotPath = new Path(Hotspots, Repeat, RepeatCircleAround);
     }
 
-    public float DistanceToDestination {get{return HotspotPath.GetFinalDestination().GetDistanceTo(Local.Position);}}
-    
     public void Reset(bool NearestWaypoint=false)
     {
         HotspotPath.Reset(NearestWaypoint);
         CalculatePath();
     }
     
-    public void CalculatePath()
+    public void CalculatePathToTarget(WoWUnit target)
     {
-        Location[] Path = Navigation.Instance.CalculatePath(Local.MapId, Local.Position, HotspotPath.Current, true);
+        Util.DebugMsg("Calculating Path to target: " + target.Name);
+        Util.DebugMsg("target is at: " + target.Position.X + " " + target.Position.Y + " " + target.Position.Z);
+        CalculatePath(target.Position);
+    }
+
+    public void CalculatePath(Location targetLocation = null)
+    {
+        if (targetLocation == null)
+        {
+            targetLocation = HotspotPath.Current;
+        }
+        Location[] Path = Navigation.Instance.CalculatePath(Local.MapId, Local.Position, targetLocation, true);
+        Util.DebugMsg("Got " + Path.Length + " waypoints to Location");
+        Util.DebugMsg("CtmTo: " + Path[1].X + " " + Path[1].Y + " " + Path[1].Z);
+        Util.DebugMsg("Local: " + Local.Position.X + " " + Local.Position.Y + " " + Local.Position.Z);
         CurrentPath = new Path(Path, false, false);
     }
 
@@ -46,7 +58,8 @@ public class PathManager
 
         if(!CurrentPath.HasNext())
         {
-            if(!HotspotPath.HasNext())
+            Util.DebugMsg("CurrentPath is empty, falling back to Hotspots");
+            if (!HotspotPath.HasNext())
             {
                 // NOTE: We have already reached our final destination.
                 // HasNext should have returned false.
