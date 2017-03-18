@@ -1,18 +1,39 @@
-﻿public class Settings
+using ZzukBot.Settings;
+
+public class Settings
 {
-    public static float SearchMobRange = 50;
+    public static Settings Instance;
+    static Settings()
+    {
+        OptionManager Manager = OptionManager.Get("SimpleGrinder");
+        Instance = Manager.LoadFromJson<Settings>();
 
-    public static bool AlwaysDrinkWhenEating = false; // useful for mages
+        if(Instance == null)
+        {
+            Instance = new Settings();
+        }
+    }
+    
+    public static void SaveSettings()
+    {
+        OptionManager Manager = OptionManager.Get("SimpleGrinder");
+        Manager.SaveToJson(Instance);
+    }
 
-    public static int DrinkAt = 45;
-    public static int EatAt = 50;
-    public static string Drink;
-    public static string Food;
-    public static string PetFood;
+    public string ProfileFilePath;
+    public int MaxLevelDifference = 5;
+    public float SearchMobRange = 50;
+    public bool AlwaysDrinkWhenEating = false; // useful for mages
 
-    public static int VendorFreeSlots = 3;
-    public static string[] ProtectedItems;
+    public int DrinkAt = 45;
+    public int EatAt = 50;
+    public string Drink;
+    public string Food;
+    public string PetFood;
 
-    public static bool Looting = true;
-    public static bool Skinning = true;
+    public int VendorFreeSlots = 3;
+    public string[] ProtectedItems;
+
+    public bool Looting = true;
+    public bool Skinning = true;
 }
