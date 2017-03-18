@@ -29,6 +29,8 @@ public class ExampleRender : IPlugin
             foreach(WoWUnit Player in ObjectManager.Instance.Players)
             {
                 Vector2 Screen = DirectX.Instance.World2Screen(Player.Position);
+                Screen.Y -= 20;
+                
                 Renderer.Instance.PushLine(Renderer.Instance.ScreenWidth / 2.0f, Renderer.Instance.ScreenHeight / 2.0f, Screen.X, Screen.Y, Renderer.Color(0, 0, 255));
             }
         }
