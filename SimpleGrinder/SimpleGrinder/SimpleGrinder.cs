@@ -17,11 +17,11 @@ public class SimpleGrinder : IBotBase
     public ClassId LoadedClass;
     public bool UserSetGhostPath;
     public bool UserSetVendorPath;
-        
+
     public bool RecalculatePath;
     public bool WasAlive;
     public bool ReadyToPull;
-    
+
     public Action StopCallback;
     public PathManager ProfileGhostPath;
     public PathManager ProfileVendorPath;
@@ -49,7 +49,7 @@ public class SimpleGrinder : IBotBase
 
         return BestUnit;
     }
-    
+
     public WoWUnit GetClosestMob(float Radius)
     {
         WoWUnit BestUnit = null;
@@ -88,11 +88,11 @@ public class SimpleGrinder : IBotBase
 
         return BestUnit;
     }
-    
+
     public bool LoadCustomClass(ClassId LocalClass)
     {
         bool Loaded = false;
-        
+
         CustomClasses.Instance.Refresh();
 
         int CustomClassIndex = 0;
@@ -112,9 +112,10 @@ public class SimpleGrinder : IBotBase
 
         return Loaded;
     }
-    
+
     public int Tick()
     {
+        Local.AntiAfk();
         if(LoadedClass != Local.Class)
         {
             if(LoadCustomClass(Local.Class))
@@ -131,11 +132,11 @@ public class SimpleGrinder : IBotBase
 
         if (Local.IsDead)
         {
-            TickDead();  
+            TickDead();
         } else if (Local.InGhostForm)
         {
             TickGhostForm();
-        } else 
+        } else
         {
             TickLiving();
         }
@@ -229,11 +230,11 @@ public class SimpleGrinder : IBotBase
             WoWUnit LootUnit = GetClosestLootable(Settings.SearchMobRange);
             if (LootUnit != null)
             {
-                TickLivingLoot();      
+                TickLivingLoot();
             }
             else
             {
-                TickLivingRest();         
+                TickLivingRest();
             }
         }
     }
@@ -301,7 +302,7 @@ public class SimpleGrinder : IBotBase
             {
                 Local.CtmTo(LootUnit.Position);
             }
-        }      
+        }
     }
 
     private void TickLivingHotSpot()
@@ -326,7 +327,6 @@ public class SimpleGrinder : IBotBase
 
     private void TickLivingTarget()
     {
-       
         if (IsTargetReachable())
         {
             Util.DebugMsg("In range for Combat, cancelling movement for now");
@@ -482,13 +482,13 @@ public class SimpleGrinder : IBotBase
             Util.DebugMsg("Parsed " + CurrentProfile.Hotspots.Length + " hotspot(s).");
             Util.DebugMsg("Parsed " + CurrentProfile.VendorHotspots.Length + " vendor hotspot(s).");
             Util.DebugMsg("Parsed " + CurrentProfile.GhostHotspots.Length + " ghost hotspot(s).");
-                
+
             ProfileGrindPath = new PathManager(CurrentProfile.Hotspots, true);
             ProfileGrindPath.Reset(true);
 
             ProfileGhostPath = UserSetGhostPath ? new PathManager(CurrentProfile.GhostHotspots) : null;
             ProfileVendorPath = UserSetVendorPath ? new PathManager(CurrentProfile.VendorHotspots) : null;
-            
+
             // UserSetGhostPath = CurrentProfile.GhostHotspots.Length > 0; // TODO: Implement, not really sure how to handle.
             UserSetVendorPath = CurrentProfile.VendorHotspots.Length > 0;
 
@@ -517,7 +517,7 @@ public class SimpleGrinder : IBotBase
             GUI = null;
         }
     }
-    
+
     public CustomClass CurrentCC {get{return CustomClasses.Instance.Current;}}
     public List<WoWUnit> NpcLootables {get{return UnitInfo.Instance.Lootable;}}
     public List<WoWUnit> NpcAttackers {get{return UnitInfo.Instance.NpcAttackers;}}
